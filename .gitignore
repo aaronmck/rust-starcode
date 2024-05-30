@@ -1,0 +1,15 @@
+*.o
+*.so
+*.gcda
+*.gcno
+gmon.out
+*.gcov
+*.swp
+*~
+starcode
+test/analysis.txt
+test/.inspect.gdb
+test/runtests
+doc/*.log
+*\#*
+*.vimtags
