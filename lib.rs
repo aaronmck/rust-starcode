@@ -1,22 +1,28 @@
 
+
+#![allow(non_upper_case_globals)]
+#![allow(non_camel_case_types)]
+#![allow(non_snake_case)]
+
+// suppress warnings about u128 (that we don't even use ourselves anyway)
+#![allow(improper_ctypes)]
+
 extern crate libc;
 extern crate tempfile;
 extern crate bindgen;
 extern crate rand;
 
-use std::convert::TryFrom;
 use std::ffi::CString;
-use libc::{c_char, c_int, c_uint, c_void};
+use libc::{c_char};
 use std::fs::{File, OpenOptions};
 use std::io::{self, BufRead, Write};
 use std::path::Path;
 use tempfile::NamedTempFile;
 
-#[allow(non_upper_case_globals)]
-#[allow(non_camel_case_types)]
-#[allow(non_snake_case)]
+
 include!("bindings.rs");
 
+#[allow(dead_code)]
 pub struct StarcodeAlignment {
     cluster_centers: Vec<String>,
     cluster_count: Vec<usize>,
@@ -170,7 +176,7 @@ fn recover_cluster_entries_from_file(file_path: &str) -> StarcodeAlignment {
         cluster_members,
     }
 }
-
+#[allow(dead_code)]
 fn print_lines_from_file(file_path: &str) -> io::Result<()> {
     // Open the file
     let file = File::open(file_path)?;

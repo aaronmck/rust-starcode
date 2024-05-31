@@ -1,8 +1,6 @@
 extern crate bindgen;
 
 use std::{
-    env,
-    path::PathBuf,
     process::Command,
 };
 use bindgen::builder;
@@ -10,9 +8,7 @@ use bindgen::builder;
 
 fn main() {
 
-    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
-
-    let output = Command::new("make")
+    Command::new("make")
         .arg("clean")
         .arg("libstarcode.a")
         .status()
