@@ -11,6 +11,7 @@ extern crate libc;
 extern crate tempfile;
 extern crate bindgen;
 extern crate rand;
+extern crate rustc_hash;
 
 use std::ffi::CString;
 use libc::{c_char};
@@ -18,18 +19,19 @@ use std::fs::{File, OpenOptions};
 use std::io::{self, BufRead, Write};
 use std::path::Path;
 use tempfile::NamedTempFile;
+use rustc_hash::{FxHashMap};
 
 
 include!("bindings.rs");
 
 #[allow(dead_code)]
 pub struct StarcodeAlignment {
-    cluster_centers: Vec<String>,
-    cluster_count: Vec<usize>,
-    cluster_members: Vec<Vec<String>>,
+    pub cluster_centers: Vec<Vec<u8>>,
+    pub cluster_count: Vec<usize>,
+    pub cluster_members: Vec<Vec<Vec<u8>>>,
 }
 
-fn write_vectors_to_file(filename: &Path, vectors: &Vec<Vec<u8>>) -> io::Result<()> {
+fn write_vectors_to_file(filename: &Path, vectors: &FxHashMap<Vec<u8>,usize>) -> io::Result<()> {
     let mut file = OpenOptions::new()
         .create(true)
         .write(true)
@@ -37,8 +39,10 @@ fn write_vectors_to_file(filename: &Path, vectors: &Vec<Vec<u8>>) -> io::Result<
         .open(filename)?;
 
     for data in vectors {
-        file.write_all(&data)?;
-        file.write_all(b"\n")?; // Optional: Adds a newline between entries
+        file.write_all(&data.0)?;
+        file.write_all(b"\t")?;
+        file.write_all(data.1.to_string().as_bytes())?;
+        file.write_all(b"\n")?;
     }
 
     Ok(())
@@ -69,20 +73,10 @@ impl StarcodeAlignment {
     /// This function will panic if the temporary input or output files cannot be created,
     /// if writing to the temporary input file fails, or if the `max_distance` is negative.
     ///
-    /// # Examples
-    ///
-    /// ```
-    /// let sequences = vec![
-    ///     vec![b'A', b'T', b'C', b'G'],
-    ///     vec![b'A', b'T', b'C', b'A'],
-    ///     vec![b'G', b'T', b'C', b'A']
-    /// ];
-    /// let max_distance = 2;
-    /// let alignment = StarcodeAlignment::align_sequences(&sequences, &max_distance);
-    /// ```
     pub fn align_sequences(
-        sequences: &Vec<Vec<u8>>,
+        sequences: &FxHashMap<Vec<u8>,usize>,
         max_distance: &i32,
+        parent_to_child_ratio: &f64,
     ) -> StarcodeAlignment {
 
         assert!(*max_distance >= 0);
@@ -94,6 +88,7 @@ impl StarcodeAlignment {
         // Get the temporary file path
         let temp_input_path = temp_input_file.path();
         let temp_output_path = temp_output_file.path();
+        println!("input path {:?} output path {:?}",temp_input_path,temp_output_path);
 
         write_vectors_to_file(temp_input_path, sequences).expect("Unable to write to temp file when running StarCode");
 
@@ -110,7 +105,7 @@ impl StarcodeAlignment {
                             0, // no stdout
                             1, // one thread
                             0, // message passing
-                            1.0, // default from StarCode codebase
+                            *parent_to_child_ratio, // default from StarCode codebase
                             1, // show the clusters?
                             0,
                             0
@@ -122,15 +117,15 @@ impl StarcodeAlignment {
     }
 }
 
-fn split_line(line: &str) -> (String, String, Option<Vec<String>>) {
+fn split_line(line: &str) -> (Vec<u8>, Vec<u8>, Option<Vec<Vec<u8>>>) {
     let tokens: Vec<&str> = line.split_whitespace().collect();
 
-    let first = tokens.get(0).unwrap_or(&"").to_string();
-    let second = tokens.get(1).unwrap_or(&"").to_string();
+    let first = tokens.get(0).unwrap_or(&"").as_bytes().to_vec();
+    let second = tokens.get(1).unwrap_or(&"").as_bytes().to_vec();
 
     if tokens.len() > 2 {
         let third_token = tokens[2];
-        let third_list: Vec<String> = third_token.split(',').map(|s| s.to_string()).collect();
+        let third_list: Vec<Vec<u8>> = third_token.split(',').map(|s| s.as_bytes().to_vec()).collect();
         (first, second, Some(third_list))
     } else {
         (first, second, None)
@@ -141,9 +136,9 @@ fn split_line(line: &str) -> (String, String, Option<Vec<String>>) {
 
 fn recover_cluster_entries_from_file(file_path: &str) -> StarcodeAlignment {
 
-    let mut cluster_centers: Vec<String> = Vec::new();
+    let mut cluster_centers: Vec<Vec<u8>> = Vec::new();
     let mut cluster_count: Vec<usize> = Vec::new();
-    let mut cluster_members: Vec<Vec<String>> = Vec::new();
+    let mut cluster_members: Vec<Vec<Vec<u8>>> = Vec::new();
 
     // Open the file
     let file = File::open(file_path).expect("Unable to open starcode clustering output");
@@ -155,10 +150,10 @@ fn recover_cluster_entries_from_file(file_path: &str) -> StarcodeAlignment {
     for line in reader.lines() {
         // Print each line
         let spt = split_line(line.unwrap().as_str());
-        assert_ne!("",spt.0);
-        assert_ne!("",spt.1);
+        assert_ne!(spt.0.len(),0);
+        assert_ne!(spt.0.len(),0);
         cluster_centers.push(spt.0.clone());
-        cluster_count.push(spt.1.parse().unwrap());
+        cluster_count.push(String::from_utf8(spt.1).unwrap().parse().unwrap());
         match spt.2 {
             None => {
                 cluster_members.push(Vec::new());
@@ -206,18 +201,45 @@ mod tests {
             .collect(),1)
     }
 
-    fn random_10mers() -> Vec<Vec<u8>> {
+    fn random_10mers() -> FxHashMap<Vec<u8>,usize> {
         let num_sequences = 10000;
         let sequence_length = 10;
-
-        (0..num_sequences)
-            .map(|_| generate_random_nucleotide_sequence(sequence_length))
-            .map(|(s,c)| format!("{} {}",String::from_utf8(s).unwrap(),c).as_bytes().to_vec()).collect()
-
+        let mut ret: FxHashMap<Vec<u8>,usize> = FxHashMap::default();
+        for _i in 0..num_sequences {
+            let k_v = generate_random_nucleotide_sequence(sequence_length);
+            ret.insert(k_v.0,k_v.1);
+        }
+        ret
     }
 
     #[test]
-    fn test_add() {
-        let alignment = StarcodeAlignment::align_sequences(&random_10mers(),&2);
+    fn test_basic_add() {
+        let _alignment = StarcodeAlignment::align_sequences(&random_10mers(),&2, &2.0);
+    }
+
+    #[test]
+    fn test_known_merge_situation() {
+        let mut knowns: FxHashMap<Vec<u8>,usize> = FxHashMap::default();
+        knowns.insert("AAAAAAAAAA".as_bytes().to_vec(),1);
+        knowns.insert("CCCCCCCCCC".as_bytes().to_vec(),1);
+        knowns.insert("GGGGGGGGGG".as_bytes().to_vec(),1);
+        knowns.insert("TTTTTTTTTT".as_bytes().to_vec(),1);
+        let alignment = StarcodeAlignment::align_sequences(&knowns,&2, &2.0);
+
+        assert_eq!(alignment.cluster_centers.len(),4);
+
+        let mut knowns: FxHashMap<Vec<u8>,usize> = FxHashMap::default();
+        knowns.insert("AAAAAAAAAA".as_bytes().to_vec(),1);
+        knowns.insert("AAAAAAAAAC".as_bytes().to_vec(),1);
+        knowns.insert("GGGGGGGGGG".as_bytes().to_vec(),1);
+        knowns.insert("TTTTTTTTTT".as_bytes().to_vec(),1);
+        let alignment = StarcodeAlignment::align_sequences(&knowns,&2, &1.0);
+
+        assert_eq!(alignment.cluster_centers.len(),3);
+
+        let alignment = StarcodeAlignment::align_sequences(&knowns,&2, &2.0);
+
+        assert_eq!(alignment.cluster_centers.len(),4);
+
     }
 }

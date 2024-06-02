@@ -1,5 +1,6 @@
 extern crate bindgen;
-
+use std::path::Path;
+use std::env;
 use std::{
     process::Command,
 };
@@ -16,8 +17,8 @@ fn main() {
 
     println!("cargo:rustc-link-lib=starcode");
     //println!("cargo:rustc-link-search={}", out_path.display());
-    println!("cargo:rustc-link-search=./");
-
+    let dir = env::var("CARGO_MANIFEST_DIR").unwrap();
+    println!("cargo:rustc-link-search=native={}", Path::new(&dir).display());
 
     // Configure and generate bindings.
     let bindings = builder().header("wrapper.h")
