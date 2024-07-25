@@ -88,7 +88,7 @@ impl StarcodeAlignment {
         // Get the temporary file path
         let temp_input_path = temp_input_file.path();
         let temp_output_path = temp_output_file.path();
-        println!("input path {:?} output path {:?}",temp_input_path,temp_output_path);
+        //println!("input path {:?} output path {:?}",temp_input_path,temp_output_path);
 
         write_vectors_to_file(temp_input_path, sequences).expect("Unable to write to temp file when running StarCode");
 
