@@ -451,7 +451,7 @@ int starcode_helper(
 
    fclose(inputf1);
    fclose(outputf1);
-
+   return(exitcode);
 };
 
 
@@ -530,12 +530,12 @@ starcode(                    // Public
     free(mtplan->tries[i].jobs->node_pos);
     free(mtplan->tries[i].jobs->lut);
     destroy_trie(mtplan->tries[i].jobs->trie,1,free);
-    free(mtplan->tries[i].jobs->trie);
+    //free(mtplan->tries[i].jobs->trie);
     free(mtplan->tries[i].jobs);
   }
   free(mtplan->tries);
   free(mtplan);
-
+   //sleep(100);
   // Remove padding characters.
   unpad_useq(uSQ);
 
@@ -1467,8 +1467,6 @@ read_rawseq(FILE* inputf, gstack_t* uSQ) {
 
   char* seq = NULL;
   int count = 0;
-  int lineno = 0;
-
   while ((nread = getline(&line, &nchar, inputf)) != -1) {
     if (nread > MAXBRCDLEN) {
       // Could trigger an overflow in 'copy'.
@@ -1476,7 +1474,6 @@ read_rawseq(FILE* inputf, gstack_t* uSQ) {
       fprintf(stderr, "offending line:\n%s\n", line);
       abort();
     }
-    lineno++;
     if (line[nread - 1] == '\n')
       line[nread - 1] = '\0';
     if (sscanf(line, "%s\t%d", copy, &count) != 2) {
