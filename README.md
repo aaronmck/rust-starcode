@@ -1,3 +1,7 @@
+# Experimental
+
+# Don't use this package; Starcode currently leaks memory; I'll remove this when fixed
+
 ## Starcode: Sequence clustering based on all-pairs search ##
 [![Build Status](https://github.com/gui11aume/starcode/workflows/starcode-CI/badge.svg?branch=master)](https://github.com/gui11aume/starcode/actions)
 ---
