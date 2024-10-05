@@ -1,6 +1,0 @@
-clang: warning: argument unused during compilation: '-shared' [-Wunused-command-line-argument]
-src/trie.c:803:33: error: called object type 'gstack_t **' (aka 'struct gstack_t **') is not a function or function pointer
-      new_gstack[i] = new_gstack();
-                      ~~~~~~~~~~^
-1 error generated.
-make: *** [src/trie.o] Error 1

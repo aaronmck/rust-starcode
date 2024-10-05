@@ -1,4 +1,0 @@
-rm -f src/trie.o src/starcode.o starcode
-gcc -std=c99 -Wall -Wextra -shared -fPIC -Isrc -c src/trie.c -o src/trie.o
-cargo:rustc-link-lib=starcode
-cargo:rustc-link-search=native=/Users/aaronmck/Desktop/code/rust-starcode
