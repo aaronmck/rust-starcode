@@ -1,0 +1,14 @@
+/Users/aaronmck/Desktop/code/rust-starcode/target/debug/deps/libclang_sys-787e343b3c0e68af.rmeta: /Users/aaronmck/.cargo/registry/src/index.crates.io-6f17d22bba15001f/clang-sys-1.7.0/src/lib.rs /Users/aaronmck/.cargo/registry/src/index.crates.io-6f17d22bba15001f/clang-sys-1.7.0/src/support.rs /Users/aaronmck/.cargo/registry/src/index.crates.io-6f17d22bba15001f/clang-sys-1.7.0/src/link.rs /Users/aaronmck/Desktop/code/rust-starcode/target/debug/build/clang-sys-6a8a07906edd94cc/out/macros.rs /Users/aaronmck/Desktop/code/rust-starcode/target/debug/build/clang-sys-6a8a07906edd94cc/out/common.rs /Users/aaronmck/Desktop/code/rust-starcode/target/debug/build/clang-sys-6a8a07906edd94cc/out/dynamic.rs
+
+/Users/aaronmck/Desktop/code/rust-starcode/target/debug/deps/libclang_sys-787e343b3c0e68af.rlib: /Users/aaronmck/.cargo/registry/src/index.crates.io-6f17d22bba15001f/clang-sys-1.7.0/src/lib.rs /Users/aaronmck/.cargo/registry/src/index.crates.io-6f17d22bba15001f/clang-sys-1.7.0/src/support.rs /Users/aaronmck/.cargo/registry/src/index.crates.io-6f17d22bba15001f/clang-sys-1.7.0/src/link.rs /Users/aaronmck/Desktop/code/rust-starcode/target/debug/build/clang-sys-6a8a07906edd94cc/out/macros.rs /Users/aaronmck/Desktop/code/rust-starcode/target/debug/build/clang-sys-6a8a07906edd94cc/out/common.rs /Users/aaronmck/Desktop/code/rust-starcode/target/debug/build/clang-sys-6a8a07906edd94cc/out/dynamic.rs
+
+/Users/aaronmck/Desktop/code/rust-starcode/target/debug/deps/clang_sys-787e343b3c0e68af.d: /Users/aaronmck/.cargo/registry/src/index.crates.io-6f17d22bba15001f/clang-sys-1.7.0/src/lib.rs /Users/aaronmck/.cargo/registry/src/index.crates.io-6f17d22bba15001f/clang-sys-1.7.0/src/support.rs /Users/aaronmck/.cargo/registry/src/index.crates.io-6f17d22bba15001f/clang-sys-1.7.0/src/link.rs /Users/aaronmck/Desktop/code/rust-starcode/target/debug/build/clang-sys-6a8a07906edd94cc/out/macros.rs /Users/aaronmck/Desktop/code/rust-starcode/target/debug/build/clang-sys-6a8a07906edd94cc/out/common.rs /Users/aaronmck/Desktop/code/rust-starcode/target/debug/build/clang-sys-6a8a07906edd94cc/out/dynamic.rs
+
+/Users/aaronmck/.cargo/registry/src/index.crates.io-6f17d22bba15001f/clang-sys-1.7.0/src/lib.rs:
+/Users/aaronmck/.cargo/registry/src/index.crates.io-6f17d22bba15001f/clang-sys-1.7.0/src/support.rs:
+/Users/aaronmck/.cargo/registry/src/index.crates.io-6f17d22bba15001f/clang-sys-1.7.0/src/link.rs:
+/Users/aaronmck/Desktop/code/rust-starcode/target/debug/build/clang-sys-6a8a07906edd94cc/out/macros.rs:
+/Users/aaronmck/Desktop/code/rust-starcode/target/debug/build/clang-sys-6a8a07906edd94cc/out/common.rs:
+/Users/aaronmck/Desktop/code/rust-starcode/target/debug/build/clang-sys-6a8a07906edd94cc/out/dynamic.rs:
+
+# env-dep:OUT_DIR=/Users/aaronmck/Desktop/code/rust-starcode/target/debug/build/clang-sys-6a8a07906edd94cc/out

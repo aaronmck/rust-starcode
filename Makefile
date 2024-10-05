@@ -9,7 +9,7 @@ INCLUDES= $(addprefix -I, $(INC_DIR))
 
 # Defaults.
 CC= gcc
-CFLAGS= -std=c99 -Wall -Wextra -shared -fPIC
+CFLAGS= -std=c99 -Wall -Wextra -fPIC # -shared TODO ADD BACK
 LDLIBS= -lpthread -lm
 
 # Development and debug flags.

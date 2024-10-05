@@ -2517,6 +2517,11 @@ pub struct __darwin_arm_thread_state {
     pub __pc: __uint32_t,
     pub __cpsr: __uint32_t,
 }
+
+#[test]
+fn bindgen_test_layout___darwin_arm_thread_state() {
+
+}
 #[test]
 fn bindgen_test_layout___darwin_arm_thread_state() {
     const UNINIT: ::std::mem::MaybeUninit<__darwin_arm_thread_state> =

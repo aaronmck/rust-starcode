@@ -419,6 +419,7 @@ new_trie
 // RETURN:                                                                
 //   A pointer to trie root with meta information and no children.        
 {
+   //fprintf(stderr, "Tower build\n");
 
    if (height < 1) {
       fprintf(stderr, "error: the minimum trie height is 1\n");
@@ -715,14 +716,24 @@ destroy_trie
 //   nodes.                                                               
 {
    // Free the milesones.
+   //fprintf(stderr, "Tower kill1\n");
+
    destroy_tower(trie->info->pebbles);
+      //fprintf(stderr, "Tower kill1.5\n");
+
    destroy_from(trie->root, destruct, free_nodes, get_height(trie), 0);
+      //fprintf(stderr, "Tower kill2\n");
+
    if (!free_nodes) {
       free(trie->root);
       trie->root = NULL;
    }
+      //fprintf(stderr, "Tower kill3\n");
+
    free(trie->info);
    free(trie);
+      //fprintf(stderr, "Tower kill4\n");
+
 }
 
 
@@ -746,7 +757,9 @@ destroy_from
 // SIDE EFFECTS:                                                          
 //   Frees the memory allocated to the nodes of a trie, and possibly the  
 //   data associated to the tail nodes.                                   
-{  
+{
+    //fprintf(stderr, "trr: %d\n",depth);
+
    if (node != NULL) {
       if (depth == maxdepth) {
          if (destruct != NULL) (*destruct)(node);
@@ -756,10 +769,19 @@ destroy_from
          node_t * child = (node_t *) node->child[i];
          destroy_from(child, destruct, free_nodes, maxdepth, depth+1);
       }
-      if (free_nodes) {
-         free(node);
+          //fprintf(stderr, "poop: 100.00%%\n");
+
+      if (free_nodes && node) {
+            //fprintf(stderr, "aaaa %p\n", (void *) &node);
+
+         //free(node);
+                     //fprintf(stderr, "gggg \n");
+
          node = NULL;
+
       }
+                //fprintf(stderr, "ss: 100.00%%\n");
+
    }
    return;
 }
@@ -799,6 +821,7 @@ new_tower
       ERROR = __LINE__;
       return NULL;
    }
+   //fprintf(stderr, "tower height: %d\n",height);
    for (int i = 0 ; i < height ; i++) {
       new[i] = new_gstack();
       if (new[i] == NULL) {
@@ -823,10 +846,23 @@ destroy_tower
    gstack_t **tower
 )
 {
-   for (int i = 0 ; tower[i] != TOWER_TOP ; i++) free(tower[i]);
+   int i = 0;
+   for (i ; tower[i] != TOWER_TOP ; i++) {
+    free(tower[i]);
+   }
+   //fprintf(stderr, "tower free: %d\n",i);
    free(tower);
 }
-
+/*
+recursively destroy gstack_t structs.
+*/
+void destroy_gstack(gstack_t *element) {
+    for (size_t x = 0; x < element->nitems; x++) {
+        destroy_gstack(&element[x]);
+        free(&element[x]);
+    }
+    free(element);
+}
 
 int
 push

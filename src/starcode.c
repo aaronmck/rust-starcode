@@ -187,6 +187,7 @@ int sphere_size_order(const void*, const void*);
 int count_order(const void*, const void*);
 int count_order_spheres(const void*, const void*);
 void destroy_useq(useq_t*);
+void destroy_gstack(gstack_t *);
 void destroy_lookup(lookup_t*);
 void* do_query(void*);
 void idstack_free(idstack_t*);
@@ -529,7 +530,7 @@ starcode(                    // Public
   for (int i = 0 ; i < mtplan->ntries ; i++) {
     free(mtplan->tries[i].jobs->node_pos);
     free(mtplan->tries[i].jobs->lut);
-    destroy_trie(mtplan->tries[i].jobs->trie,1,free);
+    destroy_trie(mtplan->tries[i].jobs->trie,1,NULL);
     //free(mtplan->tries[i].jobs->trie);
     free(mtplan->tries[i].jobs);
   }
@@ -761,7 +762,10 @@ starcode(                    // Public
     }
   }
 
-  free(uSQ);
+
+// TODO: actually free the underlying memory
+  //free(uSQ);
+    destroy_gstack(uSQ);
 
   OUTPUTF1 = NULL;
   OUTPUTF2 = NULL;
@@ -1064,6 +1068,8 @@ plan_mt(int tau, int height, int medianlen, int ntries, gstack_t* useqS)
   for (int i = 0; i < ntries; i++) {
     // Remember that 'ntries' is odd.
     int njobs = (ntries + 1) / 2;
+       //fprintf(stderr, "Tower build base\n");
+
     trie_t* local_trie = new_trie(height);
     node_t* local_nodes = (node_t*)calloc(nnodes[i], sizeof(node_t));
     mtjob_t* jobs = calloc(njobs, sizeof(mtjob_t));
