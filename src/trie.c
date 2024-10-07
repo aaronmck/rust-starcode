@@ -772,10 +772,10 @@ destroy_from
          return;
       }
       for (int i = 0 ; i < 6 ; i++) {
-         fprintf(stderr, "destroy_from child i = %p\n", i);
+         fprintf(stderr, "destroy_from child i = %d\n", i);
          fprintf(stderr, "destroy_from %d %d %p i = %d\n",node->child == NULL, node->child[i] == NULL, node->child, i);
          node_t * child = (node_t *) node->child[i];
-                  fprintf(stderr, "destroy loop2\n");
+
         fprintf(stderr, "destroy_from child preinner 1\n");
          if (child != NULL) {
             fprintf(stderr, "destroy_from child inner 1\n");
@@ -866,14 +866,18 @@ destroy_tower
    for (i ; tower[i] != TOWER_TOP ; i++) {
     free(tower[i]);
    }
-   //fprintf(stderr, "tower free: %d\n",i);
+   fprintf(stderr, "destroy_tower free: %d\n",i);
    free(tower);
 }
 /*
 recursively destroy gstack_t structs.
 */
 void destroy_gstack(gstack_t *element) {
+
+    fprintf(stderr, "destroy_gstack free: %p\n",element);
     for (size_t x = 0; x < element->nitems; x++) {
+        fprintf(stderr, "destroy_gstack sub free: %p\n",element[x]);
+
         destroy_gstack(&element[x]);
         free(&element[x]);
     }
