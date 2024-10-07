@@ -769,8 +769,10 @@ destroy_from
 
          return;
       }
+      else {
       for (int i = 0 ; i < 6 ; i++) {
          fprintf(stderr, "destroy loop\n");
+
          node_t * child = (node_t *) node->child[i];
                   fprintf(stderr, "destroy loop2\n");
 
@@ -792,6 +794,7 @@ destroy_from
 
       }
       fprintf(stderr, "ss: 100.00%%\n");
+      }
 
    }
    return;
