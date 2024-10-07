@@ -775,7 +775,7 @@ destroy_from
 
          node_t * child = (node_t *) node->child[i];
                   fprintf(stderr, "destroy loop2\n");
-
+        fprintf(stderr, "destroy preinner 1\n");
          if (child != NULL) {
             fprintf(stderr, "destroy inner 1\n");
             destroy_from(child, destruct, free_nodes, maxdepth, depth+1);
