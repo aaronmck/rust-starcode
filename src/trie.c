@@ -767,7 +767,9 @@ destroy_from
       }
       for (int i = 0 ; i < 6 ; i++) {
          node_t * child = (node_t *) node->child[i];
-         destroy_from(child, destruct, free_nodes, maxdepth, depth+1);
+         if (child != NULL) {
+            destroy_from(child, destruct, free_nodes, maxdepth, depth+1);
+         }
       }
           //fprintf(stderr, "poop: 100.00%%\n");
 
@@ -777,7 +779,7 @@ destroy_from
          //free(node);
                      //fprintf(stderr, "gggg \n");
 
-         node = NULL;
+         //node = NULL;
 
       }
                 //fprintf(stderr, "ss: 100.00%%\n");
