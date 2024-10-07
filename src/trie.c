@@ -760,7 +760,7 @@ destroy_from
 //   Frees the memory allocated to the nodes of a trie, and possibly the  
 //   data associated to the tail nodes.                                   
 {
-    fprintf(stderr, "trr: %d\n",depth);
+    fprintf(stderr, "trr: %d %d\n",depth, maxdepth);
 
    if (node != NULL) {
       if (depth == maxdepth) {
