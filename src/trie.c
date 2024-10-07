@@ -760,32 +760,32 @@ destroy_from
 //   Frees the memory allocated to the nodes of a trie, and possibly the  
 //   data associated to the tail nodes.                                   
 {
-    fprintf(stderr, "trr: %d %d\n",depth, maxdepth);
+    fprintf(stderr, "destroy_from base: %d %d\n",depth, maxdepth);
 
    if (node != NULL) {
       if (depth == maxdepth) {
-         fprintf(stderr, "destroy 1\n");
+         fprintf(stderr, "destroy_from MAX_DEPTH 1\n");
 
          if (destruct != NULL) (*destruct)(node);
-                  fprintf(stderr, "destroy 2\n");
+                  fprintf(stderr, "destroy_from MAX_DEPTH post 2\n");
 
          return;
       }
       for (int i = 0 ; i < 6 ; i++) {
-         fprintf(stderr, "destroy loop\n");
-
-         fprintf(stderr, "destroy p %d i = %p\n",node->child == NULL, node->child, i);
-         fprintf(stderr, "2destroy %d %d %p i = %d\n",node->child == NULL, node->child[i] == NULL, node->child, i);
+         fprintf(stderr, "destroy_from child i = %p\n", i);
+         fprintf(stderr, "destroy_from %d %d %p i = %d\n",node->child == NULL, node->child[i] == NULL, node->child, i);
          node_t * child = (node_t *) node->child[i];
                   fprintf(stderr, "destroy loop2\n");
-        fprintf(stderr, "destroy preinner 1\n");
+        fprintf(stderr, "destroy_from child preinner 1\n");
          if (child != NULL) {
-            fprintf(stderr, "destroy inner 1\n");
+            fprintf(stderr, "destroy_from child inner 1\n");
             destroy_from(child, destruct, free_nodes, maxdepth, depth+1);
-            fprintf(stderr, "destroy inner 2\n");
+            fprintf(stderr, "destroy_from child inner 2\n");
+         } else {
+            fprintf(stderr, "destroy_from child NULL\n");
          }
       }
-      fprintf(stderr, "poop: 100.00%%\n");
+      fprintf(stderr, "destroy_from done\n");
 
       if (free_nodes && node) {
             fprintf(stderr, "aaaa %p\n", (void *) &node);
