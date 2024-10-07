@@ -773,8 +773,8 @@ destroy_from
       for (int i = 0 ; i < 6 ; i++) {
          fprintf(stderr, "destroy loop\n");
 
-         fprintf(stderr, "destroy %d %d i = %d\n",node->child == NULL, node->child, i);
-         fprintf(stderr, "2destroy %d %d %d i = %d\n",node->child == NULL, node->child[i] == NULL, node->child, i);
+         fprintf(stderr, "destroy p %d i = %p\n",node->child == NULL, node->child, i);
+         fprintf(stderr, "2destroy %d %d %p i = %d\n",node->child == NULL, node->child[i] == NULL, node->child, i);
          node_t * child = (node_t *) node->child[i];
                   fprintf(stderr, "destroy loop2\n");
         fprintf(stderr, "destroy preinner 1\n");
