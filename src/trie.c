@@ -876,10 +876,10 @@ void destroy_gstack(gstack_t *element) {
 
     fprintf(stderr, "destroy_gstack free: %p\n",element);
     for (size_t x = 0; x < element->nitems; x++) {
-        fprintf(stderr, "destroy_gstack sub free: %p\n",element[x]);
+        fprintf(stderr, "destroy_gstack free: %p\n",element[x]);
 
-        free(element->items[i]);
-        element->items[i] = NULL; // Optional: Avoid dangling pointers
+        //destroy_gstack(&element[x]);
+        free(&element[x]);
     }
     free(element);
 }
