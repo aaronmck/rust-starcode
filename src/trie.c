@@ -488,6 +488,8 @@ new_trienode
 {
 
    node_t *node = calloc(1, sizeof(node_t));
+   memset(node->child, 0, sizeof(node->child));
+
    if (node == NULL) {
       fprintf(stderr, "error: could not create trie node\n");
       ERROR = __LINE__;
