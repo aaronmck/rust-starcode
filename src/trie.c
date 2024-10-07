@@ -762,13 +762,20 @@ destroy_from
 
    if (node != NULL) {
       if (depth == maxdepth) {
+         fprintf(stderr, "destroy 1\n");
+
          if (destruct != NULL) (*destruct)(node);
+                  fprintf(stderr, "destroy 2\n");
+
          return;
       }
       for (int i = 0 ; i < 6 ; i++) {
+         fprintf(stderr, "destroy loop\n");
          node_t * child = (node_t *) node->child[i];
          if (child != NULL) {
+            fprintf(stderr, "destroy inner 1\n");
             destroy_from(child, destruct, free_nodes, maxdepth, depth+1);
+            fprintf(stderr, "destroy inner 2\n");
          }
       }
       fprintf(stderr, "poop: 100.00%%\n");
