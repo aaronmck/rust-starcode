@@ -758,7 +758,7 @@ destroy_from
 //   Frees the memory allocated to the nodes of a trie, and possibly the  
 //   data associated to the tail nodes.                                   
 {
-    //fprintf(stderr, "trr: %d\n",depth);
+    fprintf(stderr, "trr: %d\n",depth);
 
    if (node != NULL) {
       if (depth == maxdepth) {
@@ -771,10 +771,10 @@ destroy_from
             destroy_from(child, destruct, free_nodes, maxdepth, depth+1);
          }
       }
-          //fprintf(stderr, "poop: 100.00%%\n");
+      fprintf(stderr, "poop: 100.00%%\n");
 
       if (free_nodes && node) {
-            //fprintf(stderr, "aaaa %p\n", (void *) &node);
+            fprintf(stderr, "aaaa %p\n", (void *) &node);
 
          //free(node);
                      //fprintf(stderr, "gggg \n");
@@ -782,7 +782,7 @@ destroy_from
          //node = NULL;
 
       }
-                //fprintf(stderr, "ss: 100.00%%\n");
+      fprintf(stderr, "ss: 100.00%%\n");
 
    }
    return;
