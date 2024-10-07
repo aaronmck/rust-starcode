@@ -718,23 +718,23 @@ destroy_trie
 //   nodes.                                                               
 {
    // Free the milesones.
-   //fprintf(stderr, "Tower kill1\n");
+   fprintf(stderr, "Tower kill1\n");
 
    destroy_tower(trie->info->pebbles);
-      //fprintf(stderr, "Tower kill1.5\n");
+   fprintf(stderr, "Tower kill1.5\n");
 
    destroy_from(trie->root, destruct, free_nodes, get_height(trie), 0);
-      //fprintf(stderr, "Tower kill2\n");
+   fprintf(stderr, "Tower kill2\n");
 
    if (!free_nodes) {
       free(trie->root);
       trie->root = NULL;
    }
-      //fprintf(stderr, "Tower kill3\n");
+   fprintf(stderr, "Tower kill3\n");
 
    free(trie->info);
    free(trie);
-      //fprintf(stderr, "Tower kill4\n");
+   fprintf(stderr, "Tower kill4\n");
 
 }
 
