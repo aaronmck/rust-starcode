@@ -654,7 +654,11 @@ insert_wo_malloc
    int      position,
    node_t * at_address
 )
-// SYNOPSIS:                                                              
+// THIS NO LONGER DOES THE NO-MALLOC setup; this was leaving dangling pointers,
+// which made memory cleanup impossible and prone to segfaults. A malloc is worth
+// getting rid of that.
+//
+// OLD SYNOPSIS:
 //   Adds a child to the specified node without calling 'malloc()'.
 //   The data is copied at the addres given by the 'at_address'
 //   pointer.
@@ -676,8 +680,8 @@ insert_wo_malloc
 {
 
    if (parent->child[position] != NULL) return NULL;
-   node_t *newnode = at_address; // for clarity
-
+   //node_t *newnode = at_address; // for clarity this will eventually leave hanging pointers
+    node_t *newnode = new_trienode();
    // Initialize child data.
    memset(newnode->child, 0, 6 * sizeof(void *));
    newnode->path = (parent->path << 4) + position;
@@ -718,23 +722,23 @@ destroy_trie
 //   nodes.                                                               
 {
    // Free the milesones.
-   fprintf(stderr, "Tower kill1\n");
+   //fprintf(stderr, "Tower kill1\n");
 
    destroy_tower(trie->info->pebbles);
-   fprintf(stderr, "Tower kill1.5\n");
+   //fprintf(stderr, "Tower kill1.5\n");
 
    destroy_from(trie->root, destruct, free_nodes, get_height(trie), 0);
-   fprintf(stderr, "Tower kill2\n");
+   //fprintf(stderr, "Tower kill2\n");
 
    if (!free_nodes) {
       free(trie->root);
       trie->root = NULL;
    }
-   fprintf(stderr, "Tower kill3\n");
+   //fprintf(stderr, "Tower kill3\n");
 
    free(trie->info);
    free(trie);
-   fprintf(stderr, "Tower kill4\n");
+   //fprintf(stderr, "Tower kill4\n");
 
 }
 
@@ -760,35 +764,35 @@ destroy_from
 //   Frees the memory allocated to the nodes of a trie, and possibly the  
 //   data associated to the tail nodes.                                   
 {
-    fprintf(stderr, "destroy_from base: %d %d\n",depth, maxdepth);
+    //fprintf(stderr, "destroy_from base: %d %d\n",depth, maxdepth);
 
    if (node != NULL) {
       if (depth == maxdepth) {
-         fprintf(stderr, "destroy_from MAX_DEPTH 1\n");
+         //fprintf(stderr, "destroy_from MAX_DEPTH 1\n");
 
          if (destruct != NULL) (*destruct)(node);
-                  fprintf(stderr, "destroy_from MAX_DEPTH post 2\n");
+                  //fprintf(stderr, "destroy_from MAX_DEPTH post 2\n");
 
          return;
       }
       for (int i = 0 ; i < 6 ; i++) {
-         fprintf(stderr, "destroy_from child i = %d %p\n", i,node->child == NULL);
-         fprintf(stderr, "destroy_from %d %d %p i = %d\n",node->child == NULL, node->child[i] == NULL, node->child, i);
+         //fprintf(stderr, "destroy_from child i = %d %p\n", i,node->child == NULL);
+         //fprintf(stderr, "destroy_from %d %d %p i = %d\n",node->child == NULL, node->child[i] == NULL, node->child, i);
          node_t * child = (node_t *) node->child[i];
 
-        fprintf(stderr, "destroy_from child preinner 1\n");
+        //fprintf(stderr, "destroy_from child preinner 1\n");
          if (child != NULL) {
-            fprintf(stderr, "destroy_from child inner 1\n");
+            //fprintf(stderr, "destroy_from child inner 1\n");
             destroy_from(child, destruct, free_nodes, maxdepth, depth+1);
-            fprintf(stderr, "destroy_from child inner 2\n");
+            //fprintf(stderr, "destroy_from child inner 2\n");
          } else {
-            fprintf(stderr, "destroy_from child NULL\n");
+            //fprintf(stderr, "destroy_from child NULL\n");
          }
       }
-      fprintf(stderr, "destroy_from done\n");
+      //fprintf(stderr, "destroy_from done\n");
 
       if (free_nodes && node) {
-            fprintf(stderr, "aaaa %p\n", (void *) &node);
+            //fprintf(stderr, "aaaa %p\n", (void *) &node);
 
          //free(node);
                      //fprintf(stderr, "gggg \n");
@@ -796,7 +800,7 @@ destroy_from
          //node = NULL;
 
       }
-      fprintf(stderr, "ss: 100.00%%\n");
+      //fprintf(stderr, "ss: 100.00%%\n");
 
    }
    return;
@@ -866,22 +870,28 @@ destroy_tower
    for (i ; tower[i] != TOWER_TOP ; i++) {
     free(tower[i]);
    }
-   fprintf(stderr, "destroy_tower free: %d\n",i);
+   //fprintf(stderr, "destroy_tower free: %d\n",i);
    free(tower);
 }
 /*
 recursively destroy gstack_t structs.
 */
-void destroy_gstack(gstack_t *element) {
+void destroy_gstack(gstack_t *stack) {
+    if (stack == NULL) {
+            return;
+        }
 
-    fprintf(stderr, "destroy_gstack free: %p\n",element);
-    for (size_t x = 0; x < element->nitems; x++) {
-        fprintf(stderr, "destroy_gstack free: %p\n",element[x]);
+        // Step 1: Free items in the items array
+        for (size_t i = 0; i < stack->nitems; i++) {
+            if (stack->items[i] != NULL) {
+                // Free the item if it was dynamically allocated
+                free(stack->items[i]);
+                stack->items[i] = NULL; // Optional: Avoid dangling pointers
+            }
+        }
 
-        //destroy_gstack(&element[x]);
-        free(&element[x]);
-    }
-    free(element);
+        // Step 2: Free the gstack_t structure
+        free(stack);
 }
 
 int

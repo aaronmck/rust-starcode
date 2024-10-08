@@ -1,0 +1,6 @@
+running starcode-v1.4 (last revised 2021-09-22) with 1 thread
+reading input files
+raw format detected
+sorting
+progress: 0.00% progress: 16.67% progress: 33.33% progress: 50.00% progress: 66.67% progress: 83.33% progress: 100.00%
+message passing clustering

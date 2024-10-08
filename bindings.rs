@@ -199,6 +199,7 @@ pub const __MAC_14_2: u32 = 140200;
 pub const __MAC_14_3: u32 = 140300;
 pub const __MAC_14_4: u32 = 140400;
 pub const __MAC_14_5: u32 = 140500;
+pub const __MAC_15_0: u32 = 150000;
 pub const __IPHONE_2_0: u32 = 20000;
 pub const __IPHONE_2_1: u32 = 20100;
 pub const __IPHONE_2_2: u32 = 20200;
@@ -278,6 +279,7 @@ pub const __IPHONE_17_2: u32 = 170200;
 pub const __IPHONE_17_3: u32 = 170300;
 pub const __IPHONE_17_4: u32 = 170400;
 pub const __IPHONE_17_5: u32 = 170500;
+pub const __IPHONE_18_0: u32 = 180000;
 pub const __WATCHOS_1_0: u32 = 10000;
 pub const __WATCHOS_2_0: u32 = 20000;
 pub const __WATCHOS_2_1: u32 = 20100;
@@ -325,6 +327,7 @@ pub const __WATCHOS_10_2: u32 = 100200;
 pub const __WATCHOS_10_3: u32 = 100300;
 pub const __WATCHOS_10_4: u32 = 100400;
 pub const __WATCHOS_10_5: u32 = 100500;
+pub const __WATCHOS_11_0: u32 = 110000;
 pub const __TVOS_9_0: u32 = 90000;
 pub const __TVOS_9_1: u32 = 90100;
 pub const __TVOS_9_2: u32 = 90200;
@@ -373,6 +376,7 @@ pub const __TVOS_17_2: u32 = 170200;
 pub const __TVOS_17_3: u32 = 170300;
 pub const __TVOS_17_4: u32 = 170400;
 pub const __TVOS_17_5: u32 = 170500;
+pub const __TVOS_18_0: u32 = 180000;
 pub const __BRIDGEOS_2_0: u32 = 20000;
 pub const __BRIDGEOS_3_0: u32 = 30000;
 pub const __BRIDGEOS_3_1: u32 = 30100;
@@ -399,6 +403,7 @@ pub const __BRIDGEOS_8_2: u32 = 80200;
 pub const __BRIDGEOS_8_3: u32 = 80300;
 pub const __BRIDGEOS_8_4: u32 = 80400;
 pub const __BRIDGEOS_8_5: u32 = 80500;
+pub const __BRIDGEOS_9_0: u32 = 90000;
 pub const __DRIVERKIT_19_0: u32 = 190000;
 pub const __DRIVERKIT_20_0: u32 = 200000;
 pub const __DRIVERKIT_21_0: u32 = 210000;
@@ -412,9 +417,11 @@ pub const __DRIVERKIT_23_2: u32 = 230200;
 pub const __DRIVERKIT_23_3: u32 = 230300;
 pub const __DRIVERKIT_23_4: u32 = 230400;
 pub const __DRIVERKIT_23_5: u32 = 230500;
+pub const __DRIVERKIT_24_0: u32 = 240000;
 pub const __VISIONOS_1_0: u32 = 10000;
 pub const __VISIONOS_1_1: u32 = 10100;
 pub const __VISIONOS_1_2: u32 = 10200;
+pub const __VISIONOS_2_0: u32 = 20000;
 pub const MAC_OS_X_VERSION_10_0: u32 = 1000;
 pub const MAC_OS_X_VERSION_10_1: u32 = 1010;
 pub const MAC_OS_X_VERSION_10_2: u32 = 1020;
@@ -476,8 +483,10 @@ pub const MAC_OS_VERSION_14_2: u32 = 140200;
 pub const MAC_OS_VERSION_14_3: u32 = 140300;
 pub const MAC_OS_VERSION_14_4: u32 = 140400;
 pub const MAC_OS_VERSION_14_5: u32 = 140500;
-pub const __MAC_OS_X_VERSION_MAX_ALLOWED: u32 = 140500;
+pub const MAC_OS_VERSION_15_0: u32 = 150000;
+pub const __MAC_OS_X_VERSION_MAX_ALLOWED: u32 = 150000;
 pub const __ENABLE_LEGACY_MAC_AVAILABILITY: u32 = 1;
+pub const USE_CLANG_TYPES: u32 = 0;
 pub const __PTHREAD_SIZE__: u32 = 8176;
 pub const __PTHREAD_ATTR_SIZE__: u32 = 56;
 pub const __PTHREAD_MUTEXATTR_SIZE__: u32 = 8;
@@ -489,6 +498,8 @@ pub const __PTHREAD_RWLOCK_SIZE__: u32 = 192;
 pub const __PTHREAD_RWLOCKATTR_SIZE__: u32 = 16;
 pub const __DARWIN_WCHAR_MIN: i32 = -2147483648;
 pub const _FORTIFY_SOURCE: u32 = 2;
+pub const USE_CLANG_STDARG: u32 = 0;
+pub const USE_CLANG_STDDEF: u32 = 0;
 pub const RENAME_SECLUDE: u32 = 1;
 pub const RENAME_SWAP: u32 = 2;
 pub const RENAME_EXCL: u32 = 4;
@@ -639,6 +650,7 @@ pub const EOWNERDEAD: u32 = 105;
 pub const EQFULL: u32 = 106;
 pub const ELAST: u32 = 106;
 pub const __DARWIN_CLK_TCK: u32 = 100;
+pub const USE_CLANG_LIMITS: u32 = 0;
 pub const MB_LEN_MAX: u32 = 6;
 pub const CLK_TCK: u32 = 100;
 pub const CHAR_BIT: u32 = 8;
@@ -1006,10 +1018,10 @@ pub const _QUAD_LOWWORD: u32 = 0;
 pub const __DARWIN_LITTLE_ENDIAN: u32 = 1234;
 pub const __DARWIN_BIG_ENDIAN: u32 = 4321;
 pub const __DARWIN_PDP_ENDIAN: u32 = 3412;
-pub const __DARWIN_BYTE_ORDER: u32 = 1234;
 pub const LITTLE_ENDIAN: u32 = 1234;
 pub const BIG_ENDIAN: u32 = 4321;
 pub const PDP_ENDIAN: u32 = 3412;
+pub const __DARWIN_BYTE_ORDER: u32 = 1234;
 pub const BYTE_ORDER: u32 = 1234;
 pub const EXIT_FAILURE: u32 = 1;
 pub const EXIT_SUCCESS: u32 = 0;
@@ -1596,6 +1608,9 @@ extern "C" {
         arg5: ::std::os::raw::c_uint,
     ) -> ::std::os::raw::c_int;
 }
+extern "C" {
+    pub fn printf(arg1: *const ::std::os::raw::c_char, ...) -> ::std::os::raw::c_int;
+}
 pub type fpos_t = __darwin_off_t;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -2013,9 +2028,6 @@ extern "C" {
 }
 extern "C" {
     pub fn perror(arg1: *const ::std::os::raw::c_char);
-}
-extern "C" {
-    pub fn printf(arg1: *const ::std::os::raw::c_char, ...) -> ::std::os::raw::c_int;
 }
 extern "C" {
     pub fn putc(arg1: ::std::os::raw::c_int, arg2: *mut FILE) -> ::std::os::raw::c_int;
@@ -2513,6 +2525,51 @@ fn bindgen_test_layout___darwin_arm_exception_state64() {
             stringify!(__darwin_arm_exception_state64),
             "::",
             stringify!(__exception)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct __darwin_arm_exception_state64_v2 {
+    pub __far: __uint64_t,
+    pub __esr: __uint64_t,
+}
+#[test]
+fn bindgen_test_layout___darwin_arm_exception_state64_v2() {
+    const UNINIT: ::std::mem::MaybeUninit<__darwin_arm_exception_state64_v2> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<__darwin_arm_exception_state64_v2>(),
+        16usize,
+        concat!("Size of: ", stringify!(__darwin_arm_exception_state64_v2))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<__darwin_arm_exception_state64_v2>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(__darwin_arm_exception_state64_v2)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).__far) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(__darwin_arm_exception_state64_v2),
+            "::",
+            stringify!(__far)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).__esr) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(__darwin_arm_exception_state64_v2),
+            "::",
+            stringify!(__esr)
         )
     );
 }
@@ -5947,7 +6004,10 @@ pub struct rusage_info_v6 {
     pub ri_penergy_nj: u64,
     pub ri_secure_time_in_system: u64,
     pub ri_secure_ptime_in_system: u64,
-    pub ri_reserved: [u64; 12usize],
+    pub ri_neural_footprint: u64,
+    pub ri_lifetime_max_neural_footprint: u64,
+    pub ri_interval_max_neural_footprint: u64,
+    pub ri_reserved: [u64; 9usize],
 }
 #[test]
 fn bindgen_test_layout_rusage_info_v6() {
@@ -6422,8 +6482,42 @@ fn bindgen_test_layout_rusage_info_v6() {
         )
     );
     assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).ri_reserved) as usize - ptr as usize },
+        unsafe { ::std::ptr::addr_of!((*ptr).ri_neural_footprint) as usize - ptr as usize },
         368usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(rusage_info_v6),
+            "::",
+            stringify!(ri_neural_footprint)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            ::std::ptr::addr_of!((*ptr).ri_lifetime_max_neural_footprint) as usize - ptr as usize
+        },
+        376usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(rusage_info_v6),
+            "::",
+            stringify!(ri_lifetime_max_neural_footprint)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            ::std::ptr::addr_of!((*ptr).ri_interval_max_neural_footprint) as usize - ptr as usize
+        },
+        384usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(rusage_info_v6),
+            "::",
+            stringify!(ri_interval_max_neural_footprint)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).ri_reserved) as usize - ptr as usize },
+        392usize,
         concat!(
             "Offset of field: ",
             stringify!(rusage_info_v6),
@@ -6547,96 +6641,6 @@ extern "C" {
 }
 extern "C" {
     pub fn setrlimit(arg1: ::std::os::raw::c_int, arg2: *const rlimit) -> ::std::os::raw::c_int;
-}
-#[repr(C, packed)]
-#[derive(Debug, Copy, Clone)]
-pub struct _OSUnalignedU16 {
-    pub __val: u16,
-}
-#[test]
-fn bindgen_test_layout__OSUnalignedU16() {
-    const UNINIT: ::std::mem::MaybeUninit<_OSUnalignedU16> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_OSUnalignedU16>(),
-        2usize,
-        concat!("Size of: ", stringify!(_OSUnalignedU16))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_OSUnalignedU16>(),
-        1usize,
-        concat!("Alignment of ", stringify!(_OSUnalignedU16))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__val) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_OSUnalignedU16),
-            "::",
-            stringify!(__val)
-        )
-    );
-}
-#[repr(C, packed)]
-#[derive(Debug, Copy, Clone)]
-pub struct _OSUnalignedU32 {
-    pub __val: u32,
-}
-#[test]
-fn bindgen_test_layout__OSUnalignedU32() {
-    const UNINIT: ::std::mem::MaybeUninit<_OSUnalignedU32> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_OSUnalignedU32>(),
-        4usize,
-        concat!("Size of: ", stringify!(_OSUnalignedU32))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_OSUnalignedU32>(),
-        1usize,
-        concat!("Alignment of ", stringify!(_OSUnalignedU32))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__val) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_OSUnalignedU32),
-            "::",
-            stringify!(__val)
-        )
-    );
-}
-#[repr(C, packed)]
-#[derive(Debug, Copy, Clone)]
-pub struct _OSUnalignedU64 {
-    pub __val: u64,
-}
-#[test]
-fn bindgen_test_layout__OSUnalignedU64() {
-    const UNINIT: ::std::mem::MaybeUninit<_OSUnalignedU64> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_OSUnalignedU64>(),
-        8usize,
-        concat!("Size of: ", stringify!(_OSUnalignedU64))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_OSUnalignedU64>(),
-        1usize,
-        concat!("Alignment of ", stringify!(_OSUnalignedU64))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__val) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_OSUnalignedU64),
-            "::",
-            stringify!(__val)
-        )
-    );
 }
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -7134,7 +7138,7 @@ extern "C" {
     ) -> *mut ::std::os::raw::c_void;
 }
 extern "C" {
-    pub fn valloc(arg1: usize) -> *mut ::std::os::raw::c_void;
+    pub fn valloc(__size: usize) -> *mut ::std::os::raw::c_void;
 }
 extern "C" {
     pub fn aligned_alloc(
@@ -7157,6 +7161,11 @@ extern "C" {
 }
 extern "C" {
     pub fn atexit(arg1: ::std::option::Option<unsafe extern "C" fn()>) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn at_quick_exit(
+        arg1: ::std::option::Option<unsafe extern "C" fn()>,
+    ) -> ::std::os::raw::c_int;
 }
 extern "C" {
     pub fn atof(arg1: *const ::std::os::raw::c_char) -> f64;
@@ -7230,6 +7239,9 @@ extern "C" {
             ) -> ::std::os::raw::c_int,
         >,
     );
+}
+extern "C" {
+    pub fn quick_exit(arg1: ::std::os::raw::c_int) -> !;
 }
 extern "C" {
     pub fn rand() -> ::std::os::raw::c_int;
