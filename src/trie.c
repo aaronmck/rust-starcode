@@ -772,7 +772,7 @@ destroy_from
          return;
       }
       for (int i = 0 ; i < 6 ; i++) {
-         fprintf(stderr, "destroy_from child i = %d\n", i);
+         fprintf(stderr, "destroy_from child i = %d %p\n", i,node->child == NULL);
          fprintf(stderr, "destroy_from %d %d %p i = %d\n",node->child == NULL, node->child[i] == NULL, node->child, i);
          node_t * child = (node_t *) node->child[i];
 
