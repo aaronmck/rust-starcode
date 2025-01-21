@@ -1,5 +1,3 @@
-
-
 #![allow(non_upper_case_globals)]
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
@@ -29,6 +27,28 @@ pub struct StarcodeAlignment {
     pub cluster_centers: Vec<Vec<u8>>,
     pub cluster_count: Vec<usize>,
     pub cluster_members: Vec<Vec<Vec<u8>>>,
+}
+
+pub struct StarcodeContext {
+    tower_top: *mut gstack_t,
+}
+
+impl StarcodeContext {
+    pub fn new() -> Self {
+        Self {
+            tower_top: std::ptr::null_mut()
+        }
+    }
+}
+
+impl Drop for StarcodeContext {
+    fn drop(&mut self) {
+        unsafe {
+            if !self.tower_top.is_null() {
+                destroy_tower(&mut self.tower_top);
+            }
+        }
+    }
 }
 
 fn write_vectors_to_file(filename: &Path, vectors: &FxHashMap<Vec<u8>,usize>) -> io::Result<()> {
