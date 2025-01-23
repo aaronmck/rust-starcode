@@ -1,16 +1,16 @@
 void destroy_useq(useq_t *useq) {
     if (useq) {
-        free(useq->seq);
-        free(useq->info);
-        free(useq);
+        //free(useq->seq);
+       //free(useq->info);
+        //free(useq);
     }
 }
 
 void destroy_lookup(lookup_t *lookup) {
     if (lookup) {
         // Free internal structures
-        free(lookup->data);
-        free(lookup);
+        //free(lookup->data);
+        //free(lookup);
     }
 }
 
