@@ -237,17 +237,17 @@ head_default(useq_t* u, propt_t propt) {
   char* seq = propt.pe_fastq ? cncal->info : cncal->seq;
 
 if (cncal == NULL) {
-        printf("cncal is NULL\n");
+        printf("******************************cncal is NULL\n");
     } else {
         printf("cncal is not NULL\n");
     }
     if (propt.first == NULL) {
-        printf("propt.first  is NULL\n");
+        printf("******************************propt.first  is NULL\n");
     } else {
         printf("propt.first  is not NULL\n");
     }
     if (cncal->count == NULL) {
-        printf("cncal->count is NULL\n");
+        printf("******************************cncal->count is NULL\n");
     } else {
         printf("cncal->count is not NULL\n");
     }
