@@ -96,6 +96,9 @@ impl StarcodeAlignment {
         max_distance: &i32,
         parent_to_child_ratio: &f64,
     ) -> Result<StarcodeAlignment, String> {
+        // Create a context to ensure cleanup
+        let _context = StarcodeContext::new();
+        
         println!("Debug: Starting alignment with {} sequences", sequences.len());
         
         // Create temporary files with error checking
@@ -325,7 +328,7 @@ mod tests {
         println!("Starting alternating sizes test");
         let result = run_test_with_catch(|| {
             let mut rng = rand::thread_rng();
-            println!("Starting alternating sizes test");
+            println!("Starting alternating sizes tes2 ");
             
             // Start with smaller iterations for debugging
             for i in 0..10 {
@@ -361,6 +364,7 @@ mod tests {
                 println!("Iteration {} completed successfully", i);
                 thread::sleep(Duration::from_millis(100)); // Longer delay
             }
+            println!("Starting alternating sizes test 3");
         });
 
         if let Err(e) = result {
