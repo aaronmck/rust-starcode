@@ -37,6 +37,12 @@ pub struct StarcodeContext {
 
 impl StarcodeContext {
     pub fn new() -> Self {
+        // Initialize the context
+        unsafe {
+            // Call init_tower to ensure we start with a clean state
+            init_new_tower();
+        }
+        
         Self {
             tower_top: std::ptr::null_mut(),
             #[cfg(debug_assertions)]
@@ -58,10 +64,10 @@ impl StarcodeContext {
 impl Drop for StarcodeContext {
     fn drop(&mut self) {
         unsafe {
-            if !self.tower_top.is_null() {
-                destroy_tower(&mut self.tower_top);
-            }
+            // Ensure tower is cleaned up
+            cleanup_new_tower();
         }
+        
         #[cfg(debug_assertions)]
         {
             let final_count = self.allocation_count.load(std::sync::atomic::Ordering::SeqCst);
@@ -127,19 +133,36 @@ impl StarcodeAlignment {
         unsafe {
             println!("Debug: Converting paths to C strings");
             
-            let input_file_path = match CString::new(temp_input_file.path().to_str().unwrap()) {
+            // Use CString properly to avoid memory leaks
+            let input_path_str = match temp_input_path.to_str() {
+                Some(s) => s,
+                None => return Err("Failed to convert input path to string".to_string()),
+            };
+            
+            let output_path_str = match temp_output_path.to_str() {
+                Some(s) => s,
+                None => return Err("Failed to convert output path to string".to_string()),
+            };
+            
+            let input_file_path = match CString::new(input_path_str) {
                 Ok(s) => s,
                 Err(e) => return Err(format!("Failed to create input path CString: {}", e)),
             };
-            let output_file_path = match CString::new(temp_output_path.to_str().unwrap()) {
+            
+            let output_file_path = match CString::new(output_path_str) {
                 Ok(s) => s,
                 Err(e) => return Err(format!("Failed to create output path CString: {}", e)),
             };
 
             println!("Debug: About to call starcode_helper");
+            
+            // Get raw pointers but don't transfer ownership
+            let input_ptr = input_file_path.as_ptr();
+            let output_ptr = output_file_path.as_ptr();
+            
             let result = starcode_helper(
-                input_file_path.into_raw(),
-                output_file_path.into_raw(),
+                input_ptr as *mut c_char,
+                output_ptr as *mut c_char,
                 *max_distance,
                 0,
                 1,
@@ -149,6 +172,7 @@ impl StarcodeAlignment {
                 0,
                 0
             );
+            
             println!("Debug: starcode_helper returned {}", result);
             
             if result != 0 {
@@ -323,12 +347,11 @@ mod tests {
     }
 
     // Modify the problematic test to include more logging
-    //#[test]
+    #[test]
     fn test_memory_leaks_alternating_sizes() {
         println!("Starting alternating sizes test");
         let result = run_test_with_catch(|| {
             let mut rng = rand::thread_rng();
-            println!("Starting alternating sizes tes2 ");
             
             // Start with smaller iterations for debugging
             for i in 0..10 {
@@ -348,23 +371,29 @@ mod tests {
                     sequences.insert(seq, count);
                 }
 
-                println!("Starting alignment for iteration {}", i);
-                let alignment = StarcodeAlignment::align_sequences(&sequences, &2, &2.0);
-                println!("Alignment complete with {} centers", alignment.cluster_centers.len());
+                // Create a separate scope to ensure resources are dropped
+                {
+                    println!("Starting alignment for iteration {}", i);
+                    // Create a context explicitly to ensure cleanup
+                    let _context = StarcodeContext::new();
+                    let alignment = StarcodeAlignment::align_sequences(&sequences, &2, &2.0);
+                    println!("Alignment complete with {} centers", alignment.cluster_centers.len());
+                    
+                    // Verify alignment results
+                    println!("Verifying alignment results...");
+                    assert!(alignment.cluster_centers.len() > 0);
+                    assert_eq!(alignment.cluster_centers.len(), alignment.cluster_count.len());
+                    
+                    // Force cleanup by explicitly dropping
+                    drop(alignment);
+                }
                 
-                // Verify alignment results
-                println!("Verifying alignment results...");
-                assert!(alignment.cluster_centers.len() > 0);
-                assert_eq!(alignment.cluster_centers.len(), alignment.cluster_count.len());
-                
-                // Force cleanup
-                drop(alignment);
+                // Force garbage collection
                 drop(sequences);
                 
                 println!("Iteration {} completed successfully", i);
                 thread::sleep(Duration::from_millis(100)); // Longer delay
             }
-            println!("Starting alternating sizes test 3");
         });
 
         if let Err(e) = result {
@@ -373,7 +402,7 @@ mod tests {
     }
 
     // Also modify the increasing data test
-    //#[test]
+    #[test]
     fn test_memory_leaks_with_increasing_data() {
         println!("Starting increasing data test 2");
         let result = run_test_with_catch(|| {

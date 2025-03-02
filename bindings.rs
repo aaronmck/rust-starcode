@@ -2388,6 +2388,26 @@ extern "C" {
         arg6: va_list,
     ) -> ::std::os::raw::c_int;
 }
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct useq_t {
+    _unused: [u8; 0],
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct match_t {
+    _unused: [u8; 0],
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct starcode_params_t {
+    _unused: [u8; 0],
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct lookup_t {
+    _unused: [u8; 0],
+}
 pub const output_t_DEFAULT_OUTPUT: output_t = 0;
 pub const output_t_CLUSTER_OUTPUT: output_t = 1;
 pub const output_t_NRED_OUTPUT: output_t = 2;
@@ -2426,6 +2446,18 @@ extern "C" {
         showids: ::std::os::raw::c_int,
         outputt: ::std::os::raw::c_int,
     ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn init_new_tower();
+}
+extern "C" {
+    pub fn cleanup_new_tower();
+}
+extern "C" {
+    pub fn destroy_useq(useq: *mut useq_t);
+}
+extern "C" {
+    pub fn destroy_lookup(lookup: *mut lookup_t);
 }
 pub type errno_t = ::std::os::raw::c_int;
 extern "C" {

@@ -31,6 +31,14 @@
 #define DATE "2021-09-22"
 #define STARCODE_MAX_TAU 8
 
+struct useq_t;
+struct match_t;
+typedef struct starcode_params_t starcode_params_t;
+typedef struct useq_t useq_t;
+typedef struct match_t match_t;
+typedef struct lookup_t lookup_t;
+
+
 typedef enum {
    DEFAULT_OUTPUT,
    CLUSTER_OUTPUT,
@@ -71,5 +79,16 @@ int starcode(
    const int showids,
    const int outputt
 );
+
+
+// Add function to properly initialize/cleanup tower
+void init_new_tower(void);
+
+void cleanup_new_tower(void);
+
+void destroy_useq(useq_t *useq);
+
+void destroy_lookup(lookup_t *lookup);
+
 
 #endif
