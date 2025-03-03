@@ -38,7 +38,6 @@ void   say_version (void);
 void   SIGSEGV_handler (int);
 
 char *USAGE =
-"\n"
 "Usage:"
 "  starcode [options]\n"
 "\n"
@@ -97,7 +96,7 @@ outname
 )
 {
 
-   char * name = calloc(320,1);
+   char * name = (char *) calloc(320,1);
    if (strlen(path) > 310) {
       fprintf(stderr, "input file name too long (%s)\n", path);
       abort();

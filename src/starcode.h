@@ -81,14 +81,5 @@ int starcode(
 );
 
 
-// Add function to properly initialize/cleanup tower
-void init_new_tower(void);
-
-void cleanup_new_tower(void);
-
-void destroy_useq(useq_t *useq);
-
-void destroy_lookup(lookup_t *lookup);
-
 
 #endif

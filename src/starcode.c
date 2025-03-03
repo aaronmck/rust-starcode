@@ -86,6 +86,7 @@ typedef enum {
 typedef struct mtplan_t mtplan_t;
 typedef struct mttrie_t mttrie_t;
 typedef struct mtjob_t mtjob_t;
+typedef struct thread_wrapped_job thread_wrapped_job;
 typedef struct propt_t propt_t;
 typedef struct idstack_t idstack_t;
 
@@ -141,6 +142,46 @@ struct mttrie_t {
   struct mtjob_t* jobs;
 };
 
+// Define a struct to replace global variables
+typedef struct starcode_params_t {
+    FILE* outputf1;
+    FILE* outputf2;
+    format_t format;
+    int outputt;
+    int clusteralg;
+    double cluster_ratio;
+} starcode_params_t;
+
+// Create a function to initialize the parameters
+starcode_params_t* create_starcode_params(
+    FILE* outputf1,
+    FILE* outputf2,
+    format_t format,
+    int outputt,
+    int clusteralg,
+    double cluster_ratio
+) {
+    starcode_params_t* params = malloc(sizeof(starcode_params_t));
+    if (params == NULL) return NULL;
+    
+    params->outputf1 = outputf1;
+    params->outputf2 = outputf2;
+    params->format = format;
+    params->outputt = outputt;
+    params->clusteralg = clusteralg;
+    params->cluster_ratio = cluster_ratio;
+    
+    return params;
+}
+
+// Function to free parameters
+void destroy_starcode_params(starcode_params_t* params) {
+    if (params != NULL) {
+        free(params);
+    }
+}
+
+
 struct mtjob_t {
   int start;
   int end;
@@ -157,6 +198,11 @@ struct mtjob_t {
   int* jobsdone;
   char* trieflag;
   char* active;
+};
+
+struct thread_wrapped_job {
+  struct mtjob_t job;
+  struct starcode_params_t* params;
 };
 
 struct propt_t {
@@ -185,7 +231,7 @@ int count_order_spheres(const void*, const void*);
 void destroy_useq(useq_t*);
 void destroy_gstack(gstack_t *);
 void destroy_lookup(lookup_t*);
-void* do_query(void*, starcode_params_t*);
+void* do_query(void*);
 void idstack_free(idstack_t*);
 idstack_t* idstack_new(size_t);
 void idstack_push(int*, size_t, idstack_t*);
@@ -199,9 +245,9 @@ lookup_t* new_lookup(int, int, int);
 useq_t* new_useq(int, char*, char*);
 int pad_useq(gstack_t*, int*);
 mtplan_t* plan_mt(int, int, int, int, gstack_t*);
-void print_tidy(long int, const gstack_t*, const starcode_params_t*, int, int);
+void print_tidy(long int, const gstack_t*, int);
 void sort_and_print_ids(idstack_t*, starcode_params_t*);
-void run_plan(mtplan_t*, int, int);
+void run_plan(mtplan_t*, int, int, starcode_params_t*);
 gstack_t* read_rawseq(FILE*, gstack_t*, starcode_params_t*);
 gstack_t* read_fasta(FILE*, gstack_t*, starcode_params_t*);
 gstack_t* read_fastq(FILE*, gstack_t*, starcode_params_t*);
@@ -219,67 +265,10 @@ void unpad_useq(gstack_t*);
 void* nukesort(void*);
 
 
-// Define a struct to replace global variables
-typedef struct starcode_params_t {
-    FILE* outputf1;
-    FILE* outputf2;
-    int outputt;
-    int clusteralg;
-    double cluster_ratio;
-} starcode_params_t;
-
-// Create a function to initialize the parameters
-starcode_params_t* create_starcode_params(
-    FILE* outputf1,
-    FILE* outputf2,
-    int outputt,
-    int clusteralg,
-    double cluster_ratio
-) {
-    starcode_params_t* params = malloc(sizeof(starcode_params_t));
-    if (params == NULL) return NULL;
-    
-    params->outputf1 = outputf1;
-    params->outputf2 = outputf2;
-    params->outputt = outputt;
-    params->clusteralg = clusteralg;
-    params->cluster_ratio = cluster_ratio;
-    
-    return params;
-}
-
-// Function to free parameters
-void destroy_starcode_params(starcode_params_t* params) {
-    if (params != NULL) {
-        free(params);
-    }
-}
-
 void
 head_default(useq_t* u, propt_t propt, starcode_params_t* params) {
   useq_t* cncal = u->canonical;
   char* seq = propt.pe_fastq ? cncal->info : cncal->seq;
-
-if (cncal == NULL) {
-        printf("******************************cncal is NULL\n");
-    } else {
-        printf("cncal is not NULL\n");
-    }
-    if (propt.first == NULL) {
-        printf("******************************propt.first  is NULL\n");
-    } else {
-        printf("propt.first  is not NULL\n");
-    }
-    if (cncal->count == NULL) {
-        printf("******************************cncal->count is NULL\n");
-    } else {
-        printf("cncal->count is not NULL\n");
-    }
-    if (params->outputf1 == NULL) {
-        printf("******************************OUTPUTF1 is NULL\n");
-    } else {
-        printf("OUTPUTF1 is not NULL\n");
-    }
 
   fprintf(params->outputf1, "%s%s\t%ld", propt.first, seq, cncal->count);
 
@@ -396,9 +385,7 @@ void
 print_tidy( // Private
     const long int nseq, // Total number of sequences
     const gstack_t* uSQ,  // Stack of useq after clustering
-    const starcode_params_t* params, // Parameters struct
-    const int showclusters, // Whether to show clusters
-    const int showids // Whether to show IDs
+    const int is_pe_fastq
 )
 // SYNOPSIS:
 //   Print each sequence in initial order next to its
@@ -406,39 +393,49 @@ print_tidy( // Private
 //   print slash-separated pairs next to their slash-
 //   separated pair of centroids.
 {
-  // Use params instead of globals
-  const int is_pe_fastq = (params->outputt == PE_FASTQ);
-  
-  // Create a structure to pass to the printing functions.
-  propt_t propt = {
-    .pe_fastq = is_pe_fastq,
-    .showclusters = showclusters,
-    .showids = showids,
-  };
+  useq_t** outputseq = calloc(sizeof(useq_t*), nseq);
+  if (outputseq == NULL) {
+    alert();
+    krash();
+  }
+  for (size_t i = 0; i < uSQ->nitems; i++) {
+    useq_t* u = (useq_t*)uSQ->items[i];
+    for (unsigned int j = 0; j < u->nids; j++) {
+      // Sequence IDs are 1-based.
+      outputseq[u->seqid[j] - 1] = u;
+    }
+  }
 
-  // Print the clusters.
-  for (int i = 0; i < uSQ->nitems; i++) {
-    useq_t* u = uSQ->items[i];
-    if (u->canonical == NULL) {
-      // This is a cluster head.
-      if (params->outputt == RAW) {
-        print_nr_raw(u, params);
-      } else if (params->outputt  == FASTA) {
-        print_nr_fasta(u, params);
-      } else if (params->outputt == FASTQ) {
-        print_nr_fastq(u, params);
-      } else if (params->outputt == PE_FASTQ) {
-        print_nr_pe_fastq(u, params);
-      }
+  // For paired-end FASTQ files, search the separator
+  // in the sequence of the pair.
+  char sep[STARCODE_MAX_TAU + 2] = {0};
+  memset(sep, '-', STARCODE_MAX_TAU + 1);
 
-      // Print the cluster members.
-      if (showclusters) {
-        if (params->clusteralg == 0) {
-          members_sc_default(u, propt, params);
-        } else {
-          members_mp_default(u, propt, params);
-        }
+  for (long int i = 0; i < nseq; i++) {
+    useq_t* u = outputseq[i];
+    if (u == NULL) {
+      alert();
+      krash();
+    }
+    if (is_pe_fastq) {
+      char * seq2 = strstr(u->seq, sep);
+      char * can2 = strstr(u->canonical->seq, sep);
+      if (seq2 == NULL || can2 == NULL) {
+        fprintf(stderr, "%s\n", u->seq);
+        fprintf(stderr, "%s\n", u->canonical->seq);
+        alert();
+        krash();
       }
+      // Insert null byte to terminate first read.
+      seq2[0] = can2[0] = '\0';
+      fprintf(stdout, "%s/%s\t%s/%s\n", u->seq, seq2 + STARCODE_MAX_TAU + 1,
+          u->canonical->seq, can2 + STARCODE_MAX_TAU + 1);
+      // Put it back as it was because the sequence may
+      // be present multiple times.
+      seq2[0] = can2[0] = '-';
+    }
+    else {
+      fprintf(stdout, "%s\t%s\n", u->seq, u->canonical->seq);
     }
   }
 }
@@ -456,7 +453,7 @@ int starcode_helper(
     const int outputt        // Output type (format)
 ) {
     // Initialize tower at start
-    init_new_tower();
+    //init_new_tower();
     
     FILE *inputf1 = NULL;
     FILE *outputf1 = NULL;
@@ -498,7 +495,7 @@ cleanup:
     if (outputf1 != NULL) fclose(outputf1);
     
     // Cleanup tower after use
-    cleanup_new_tower();
+    //cleanup_new_tower();
     
     return result;
 }
@@ -521,16 +518,18 @@ starcode(                    // Public
 // SYNOPSIS:
 //   Performs all-pairs sequence clustering.
 {
+  // Initialize thread-local variables for the main thread
+  init_thread_local_tower_top();
+
   // Replace global variables with struct
   starcode_params_t* params = create_starcode_params(
-      outputf1, outputf2, outputt, clusteralg, parent_to_child);
+      outputf1, outputf2, FASTA,outputt, clusteralg, parent_to_child);
   
   if (params == NULL) {
     fprintf(stderr, "failed to allocate parameters\n");
     return 1;
   }
-
-  if (verbose) {
+if (verbose) {
     fprintf(stderr, "running %s (last revised %s) with %d thread%s\n",
         VERSION, DATE, thrmax, thrmax > 1 ? "s" : "");
     fprintf(stderr, "reading input files\n");
@@ -538,7 +537,6 @@ starcode(                    // Public
   gstack_t* uSQ = read_file(inputf1, inputf2, verbose, params);
   if (uSQ == NULL || uSQ->nitems < 1) {
     fprintf(stderr, "input file empty\n");
-    destroy_starcode_params(params);
     return 1;
   }
 
@@ -549,35 +547,268 @@ starcode(                    // Public
     fprintf(stderr, "sorting\n");
   uSQ->nitems = seqsort((useq_t**)uSQ->items, uSQ->nitems, thrmax);
 
-  // Pad sequences.
-  int median = 0;
-  if (pad_useq(uSQ, &median) != 0) {
-    fprintf(stderr, "error padding sequences\n");
-    destroy_starcode_params(params);
-    return 1;
+  // Get number of tries.
+  size_t ntries = 3 * thrmax + (thrmax % 2 == 0);
+  if (uSQ->nitems < ntries) {
+    ntries = 1;
+    thrmax = 1;
   }
 
-  // Cluster.
+  // Pad sequences (and return the median size).
+  // Compute 'tau' from it in "auto" mode.
+  int med = -1;
+  int height = pad_useq(uSQ, &med);
+  if (tau < 0) {
+    tau = med > 160 ? 8 : 2 + med / 30;
+    if (verbose) {
+      fprintf(stderr, "setting dist to %d\n", tau);
+    }
+  }
+
+  // Make multithreading plan.
+  mtplan_t* mtplan = plan_mt(tau, height, med, ntries, uSQ);
+
+  // Run the query.
+  run_plan(mtplan, verbose, thrmax, params);
   if (verbose)
-    fprintf(stderr, "clustering\n");
+    fprintf(stderr, "progress: 100.00%%\n");
 
-  // Cluster with the selected algorithm.
-  if (params->clusteralg == 0) {
-    sphere_clustering(uSQ);
-  } else {
-    message_passing_clustering(uSQ);
+  // Free mtplan.
+  free(mtplan->mutex);
+  free(mtplan->monitor);
+  for (int i = 0 ; i < mtplan->ntries ; i++) {
+    free(mtplan->tries[i].jobs->node_pos);
+    free(mtplan->tries[i].jobs->lut);
+    free(mtplan->tries[i].jobs->trie);
+    free(mtplan->tries[i].jobs);
   }
+  free(mtplan->tries);
+  free(mtplan);
 
-  // Unpad sequences.
+  // Remove padding characters.
   unpad_useq(uSQ);
 
-  // Print output.
-  if (verbose)
-    fprintf(stderr, "printing output\n");
+  //
+  //  MESSAGE PASSING ALGORITHM
+  //
 
-  // Pass params to print_tidy instead of using globals
-  print_tidy(nseq, uSQ, params, showclusters, showids);
+  propt_t propt = {
+      .first = {0},
+      .showclusters = showclusters,
+      .showids = showids,
+      .pe_fastq = PE_FASTQ == params->format,
+  };
 
+  if (params->clusteralg == MP_CLUSTER) {
+    if (verbose)
+      fprintf(stderr, "message passing clustering\n");
+
+    // Cluster the pairs.
+    message_passing_clustering(uSQ);
+    // Sort in canonical order.
+    qsort(uSQ->items, uSQ->nitems, sizeof(useq_t*), canonical_order);
+
+    if (params->outputt == DEFAULT_OUTPUT) {
+      useq_t* first = (useq_t*)uSQ->items[0];
+      useq_t* canonical = first->canonical;
+
+      // If the first canonical is NULL, then they all are.
+      if (first->canonical == NULL)
+        return 0;
+      head_default(first, propt, params);
+
+      // Use newline separator.
+      memcpy(propt.first, "\n", 1);
+
+      // Store sequence ids for the current cluster in a stack.
+      idstack_t* idstack = NULL;
+      if (showids) {
+        idstack = idstack_new(64);
+        idstack_push(first->seqid, first->nids, idstack);
+      }
+
+      // Run through the clustered items.
+      for (size_t i = 1; i < uSQ->nitems; i++) {
+        useq_t* u = (useq_t*)uSQ->items[i];
+        if (u->canonical == NULL) {
+          break;
+        }
+        if (u->canonical != canonical) {
+          // Print cluster seqIDs of previous canonical.
+          if (showids)
+            sort_and_print_ids(idstack, params);
+          // Update canonical and print.
+          canonical = u->canonical;
+          head_default(u, propt, params);
+          // Reset seq_id stack.
+          if (showids)
+            idstack->pos = 0;
+        } else {
+          members_mp_default(u, propt, params);
+        }
+
+        // Update seqid list.
+        if (showids)
+          idstack_push(u->seqid, u->nids, idstack);
+      }
+
+      // Print last cluster seqIDs.
+      if (showids) {
+        sort_and_print_ids(idstack, params);
+        idstack_free(idstack);
+      }
+      fprintf(params->outputf1, "\n");
+    }
+
+    if (params->outputt == TIDY_OUTPUT) {
+      print_tidy(nseq, uSQ, params->format == PE_FASTQ);
+    }
+
+    //
+    //  SPHERES ALGORITHM
+    //
+
+  } else if (params->clusteralg == SPHERES_CLUSTER) {
+    if (verbose)
+      fprintf(stderr, "spheres clustering\n");
+    // Cluster the pairs.
+    sphere_clustering(uSQ);
+    // Sort in count order.
+    qsort(uSQ->items, uSQ->nitems, sizeof(useq_t*), sphere_size_order);
+
+    // Default output.
+    if (params->outputt == DEFAULT_OUTPUT) {
+      // Sequence id stack.
+      idstack_t* idstack = NULL;
+      if (showids)
+        idstack = idstack_new(64);
+      for (size_t i = 0; i < uSQ->nitems; i++) {
+        useq_t* u = (useq_t*)uSQ->items[i];
+        if (u->canonical != u)
+          break;
+
+        fprintf(params->outputf1, "%s\t", u->seq);
+        if (showclusters) {
+          fprintf(params->outputf1, "%ld\t%s", u->sphere_c, u->seq);
+        } else {
+          fprintf(params->outputf1, "%ld", u->sphere_c);
+        }
+        // Reset stack and add canonical ids.
+        if (showids) {
+          idstack->pos = 0;
+          idstack_push(u->seqid, u->nids, idstack);
+        }
+
+        // Get sequences and ids from matches.
+        if ((showclusters || showids) && u->matches != NULL) {
+          gstack_t* hits;
+          for (int j = 0; (hits = u->matches[j]) != TOWER_TOP; j++) {
+            for (size_t k = 0; k < hits->nitems; k++) {
+              useq_t* match = (useq_t*)hits->items[k];
+              if (match->canonical != u)
+                continue;
+              if (showclusters)
+                fprintf(params->outputf1, ",%s", match->seq);
+              if (showids)
+                idstack_push(match->seqid, match->nids, idstack);
+            }
+          }
+        }
+        // Print cluster seqIDs.
+        if (showids)
+          sort_and_print_ids(idstack, params);
+        fprintf(params->outputf1, "\n");
+      }
+      if (showids)
+        idstack_free(idstack);
+    }
+
+    if (params->outputt == TIDY_OUTPUT) {
+      print_tidy(nseq, uSQ, params->format == PE_FASTQ);
+    }
+
+    //
+    //  CONNECTED COMPONENTS ALGORITHM
+    //
+
+  } else if (params->clusteralg == COMPONENTS_CLUSTER) {
+    if (verbose)
+      fprintf(stderr, "connected components clustering\n");
+    // Cluster connected components.
+    // Returns a stack containing stacks of clusters, where
+    // clusters->item[i]->item[0] is the centroid of the i-th cluster. The
+    // output is sorted by cluster count, which is stored in
+    // centroid->count.
+    gstack_t* clusters = compute_clusters(uSQ);
+
+    // Default output.
+    if (params->outputt == DEFAULT_OUTPUT) {
+      idstack_t* idstack = NULL;
+      if (showids)
+        idstack = idstack_new(64);
+      for (size_t i = 0; i < clusters->nitems; i++) {
+        gstack_t* cluster = (gstack_t*)clusters->items[i];
+        // Get canonical.
+        useq_t* canonical = (useq_t*)cluster->items[0];
+        // Print canonical and cluster count.
+        fprintf(params->outputf1, "%s\t%ld", canonical->seq, canonical->count);
+        if (showclusters || showids) {
+          fprintf(params->outputf1, "\t%s", canonical->seq);
+          if (showids) {
+            idstack->pos = 0;
+            idstack_push(canonical->seqid, canonical->nids, idstack);
+          }
+          for (size_t k = 1; k < cluster->nitems; k++) {
+            useq_t* u = (useq_t*)cluster->items[k];
+            if (showclusters)
+              fprintf(params->outputf1, ",%s", u->seq);
+            if (showids)
+              idstack_push(u->seqid, u->nids, idstack);
+          }
+          if (showids)
+            sort_and_print_ids(idstack, params);
+        }
+        fprintf(params->outputf1, "\n");
+      }
+      if (showids)
+        idstack_free(idstack);
+    } else if (params->outputt == NRED_OUTPUT) {
+      uSQ->nitems = 0;
+      // Fill uSQ with cluster centroids.
+      for (size_t i = 0; i < clusters->nitems; i++)
+        push(((gstack_t*)clusters->items[i])->items[0], &uSQ);
+    }
+  }
+
+  //
+  //  ALTERNATIVE OUTPUT FORMAT: NON-REDUNDANT
+  //
+
+  if (params->outputt == NRED_OUTPUT) {
+    if (verbose)
+      fprintf(stderr, "non-redundant output\n");
+    // If print non redundant sequences, just print the
+    // canonicals with their info.
+
+    void (*print_nr)(useq_t*, starcode_params_t*) = {0};
+    if (params->format == FASTA)
+      print_nr = print_nr_fasta;
+    else if (params->format == FASTQ)
+      print_nr = print_nr_fastq;
+    else if (params->format == PE_FASTQ)
+      print_nr = print_nr_pe_fastq;
+    else
+      print_nr = print_nr_raw;
+
+    for (size_t i = 0; i < uSQ->nitems; i++) {
+      useq_t* u = (useq_t*)uSQ->items[i];
+      if (u->canonical == NULL)
+        break;
+      if (u->canonical != u)
+        continue;
+      print_nr(u, params);
+    }
+  }
   // Clean up.
   for (int i = 0; i < uSQ->nitems; i++) {
     destroy_useq(uSQ->items[i]);
@@ -589,7 +820,7 @@ starcode(                    // Public
 }
 
 void
-run_plan(mtplan_t* mtplan, const int verbose, const int thrmax) {
+run_plan(mtplan_t* mtplan, const int verbose, const int thrmax, starcode_params_t* params) {
   // Count total number of jobs.
   int njobs = mtplan->ntries * (mtplan->ntries + 1) / 2;
 
@@ -616,9 +847,12 @@ run_plan(mtplan_t* mtplan, const int verbose, const int thrmax) {
         mttrie->flag = TRIE_BUSY;
         mtplan->active++;
         mtjob_t* job = mttrie->jobs + mttrie->currentjob++;
+        thread_wrapped_job* job_global = malloc(sizeof(thread_wrapped_job));
+        job_global->job = *job;
+        job_global->params = params;
         pthread_t thread;
         // Start job and detach thread.
-        if (pthread_create(&thread, NULL, do_query, job)) {
+        if (pthread_create(&thread, NULL, do_query, job_global)) {
           alert();
           krash();
         }
@@ -642,9 +876,14 @@ run_plan(mtplan_t* mtplan, const int verbose, const int thrmax) {
 }
 
 void*
-do_query(void* args, starcode_params_t* params) {
+do_query(void* args) {
+  // Initialize thread-local variables
+  init_thread_local_tower_top();
+  
   // Unpack arguments.
-  mtjob_t* job = (mtjob_t*)args;
+  thread_wrapped_job* job_global = (thread_wrapped_job*)args;
+  starcode_params_t* params = job_global->params;
+  mtjob_t* job = &job_global->job;
   gstack_t* useqS = job->useqS;
   trie_t* trie = job->trie;
   lookup_t* lut = job->lut;
@@ -1181,6 +1420,9 @@ nukesort(void* args)
 // SIDE EFFECTS:
 //   Sorts the array of 'useq_t' specified in 'args'.
 {
+  // Initialize thread-local variables
+  init_thread_local_tower_top();
+  
   sortargs_t* sortargs = (sortargs_t*)args;
   if (sortargs->size < 2)
     return NULL;
@@ -1587,7 +1829,7 @@ read_PE_fastq(FILE* inputf1, FILE* inputf2, gstack_t* uSQ, starcode_params_t* pa
 gstack_t*
 read_file(FILE* inputf1, FILE* inputf2, const int verbose, starcode_params_t* params) {
   if (inputf2 != NULL)
-    params->outputt = PE_FASTQ;
+    params->format = PE_FASTQ;
   else {
     // Read first line of the file to guess format.
     // Store in global variable FORMAT.
@@ -1597,17 +1839,17 @@ read_file(FILE* inputf1, FILE* inputf2, const int verbose, starcode_params_t* pa
         // Empty file.
         return NULL;
       case '>':
-        params->outputt = FASTA;
+        params->format = FASTA;
         if (verbose)
           fprintf(stderr, "FASTA format detected\n");
         break;
       case '@':
-        params->outputt = FASTQ;
+        params->format = FASTQ;
         if (verbose)
           fprintf(stderr, "FASTQ format detected\n");
         break;
       default:
-        params->outputt = RAW;
+        params->format = RAW;
         if (verbose)
           fprintf(stderr, "raw format detected\n");
     }
@@ -1624,13 +1866,13 @@ read_file(FILE* inputf1, FILE* inputf2, const int verbose, starcode_params_t* pa
     krash();
   }
 
-  if (params->outputt == RAW)
+  if (params->format == RAW)
     return read_rawseq(inputf1, uSQ, params);
-  if (params->outputt == FASTA)
+  if (params->format == FASTA)
     return read_fasta(inputf1, uSQ, params);
-  if (params->outputt == FASTQ)
+  if (params->format == FASTQ)
     return read_fastq(inputf1, uSQ, params);
-  if (params->outputt == PE_FASTQ)
+  if (params->format == PE_FASTQ)
     return read_PE_fastq(inputf1, inputf2, uSQ, params);
 
   return NULL;
@@ -2276,66 +2518,3 @@ krash(void) {
   abort();
 }
 
-
-
-// Make TOWER_TOP thread-local to avoid conflicts
-#ifdef __GNUC__
-__thread gstack_t *TOWER_TOP = NULL;
-#else
-static gstack_t *TOWER_TOP = NULL;
-#endif
-
-// Add function to properly initialize/cleanup tower
-void init_new_tower(void) {
-    if (TOWER_TOP != NULL) {
-        destroy_tower(&TOWER_TOP);
-    }
-    TOWER_TOP = NULL;
-}
-
-void cleanup_new_tower(void) {
-    if (TOWER_TOP != NULL) {
-        destroy_tower(&TOWER_TOP);
-        TOWER_TOP = NULL;
-    }
-}
-
-void destroy_useq(useq_t *useq) {
-    if (useq) {
-        //free(useq->seq);
-       //free(useq->info);
-        //free(useq);
-    }
-}
-
-void destroy_lookup(lookup_t *lookup) {
-    if (lookup) {
-        // Free internal structures
-        //free(lookup->data);
-        //free(lookup);
-    }
-}
-
-int starcode(char *input, char *output, ...) {
-    // Existing code...
-    
-    // Clean up before returning
-    for (int i = 0; i < n_seqs; i++) {
-        destroy_useq(seqs[i]);
-    }
-    destroy_lookup(lookup);
-    
-    return status;
-}
-
-int starcode_helper(char *input, char *output, ...) {
-    // Initialize tower at start
-    init_new_tower();
-    
-    int result = starcode(input, output, ...);
-    
-    // Cleanup tower after use
-    cleanup_new_tower();
-    
-    return result;
-} 

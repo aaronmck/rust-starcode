@@ -40,7 +40,7 @@ impl StarcodeContext {
         // Initialize the context
         unsafe {
             // Call init_tower to ensure we start with a clean state
-            init_new_tower();
+            //init_new_tower();
         }
         
         Self {
@@ -65,7 +65,7 @@ impl Drop for StarcodeContext {
     fn drop(&mut self) {
         unsafe {
             // Ensure tower is cleaned up
-            cleanup_new_tower();
+            //cleanup_new_tower();
         }
         
         #[cfg(debug_assertions)]
@@ -180,7 +180,7 @@ impl StarcodeAlignment {
             }
         }
 
-        println!("Debug: Reading results from output file");
+        //println!("Debug: Reading results from output file {}", temp_output_path.to_str().unwrap());
         Ok(recover_cluster_entries_from_file(temp_output_path.to_str().unwrap()))
     }
 
@@ -228,7 +228,9 @@ fn recover_cluster_entries_from_file(file_path: &str) -> StarcodeAlignment {
     // Iterate over each line in the file
     for line in reader.lines() {
         // Print each line
-        let spt = split_line(line.unwrap().as_str());
+        let line = line.unwrap();
+        //println!("{}", &line.clone());
+        let spt = split_line(line.as_str());
         assert_ne!(spt.0.len(),0);
         assert_ne!(spt.0.len(),0);
         cluster_centers.push(spt.0.clone());

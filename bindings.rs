@@ -2447,18 +2447,6 @@ extern "C" {
         outputt: ::std::os::raw::c_int,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
-    pub fn init_new_tower();
-}
-extern "C" {
-    pub fn cleanup_new_tower();
-}
-extern "C" {
-    pub fn destroy_useq(useq: *mut useq_t);
-}
-extern "C" {
-    pub fn destroy_lookup(lookup: *mut lookup_t);
-}
 pub type errno_t = ::std::os::raw::c_int;
 extern "C" {
     pub fn __error() -> *mut ::std::os::raw::c_int;
@@ -8099,6 +8087,9 @@ extern "C" {
 pub const BASES: &[u8; 6] = b"ACGTN\0";
 extern "C" {
     pub static TOWER_TOP: *mut gstack_t;
+}
+extern "C" {
+    pub fn init_thread_local_tower_top();
 }
 extern "C" {
     pub fn check_trie_error_and_reset() -> ::std::os::raw::c_int;

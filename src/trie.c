@@ -51,7 +51,6 @@ static const int translate[256] = {
    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 };
 // Translation table to query a sequence in the trie.
 // In the table below, non DNA letters are set to a numerical
@@ -106,7 +105,14 @@ int      recursive_count_nodes (node_t * node, int, int);
 
 // Globals.
 int ERROR = 0;
-gstack_t * const TOWER_TOP;
+_Thread_local gstack_t * const TOWER_TOP;
+
+// Initialize the thread-local TOWER_TOP variable
+// This should be called when a new thread starts
+void init_thread_local_tower_top(void) {
+  // Cast away const to initialize thread-local copy
+  *((gstack_t **)&TOWER_TOP) = NULL;
+}
 
 int get_height(trie_t *trie) { return trie->info->height; }
 
@@ -680,7 +686,6 @@ insert_wo_malloc
 {
 
    if (parent->child[position] != NULL) return NULL;
-   //node_t *newnode = at_address; // for clarity this will eventually leave hanging pointers
     node_t *newnode = new_trienode();
    // Initialize child data.
    memset(newnode->child, 0, 6 * sizeof(void *));
@@ -837,7 +842,7 @@ new_tower
 {
    gstack_t **new = malloc((height+1) * sizeof(gstack_t *));
    if (new == NULL) {
-      fprintf(stderr, "error: could not create tower\n");
+      //fprintf(stderr, "error: could not create tower\n");
       ERROR = __LINE__;
       return NULL;
    }
@@ -846,7 +851,7 @@ new_tower
       new[i] = new_gstack();
       if (new[i] == NULL) {
          ERROR = __LINE__;
-         fprintf(stderr, "error: could not initialize tower\n");
+         //fprintf(stderr, "error: could not initialize tower\n");
          while (--i >= 0) {
             free(new[i]);
             new[i] = NULL;
@@ -866,12 +871,15 @@ destroy_tower
    gstack_t **tower
 )
 {
+      //fprintf(stderr, "destroy_tower pre\n");
+
    int i = 0;
    for (i ; tower[i] != TOWER_TOP ; i++) {
     free(tower[i]);
    }
    //fprintf(stderr, "destroy_tower free: %d\n",i);
    free(tower);
+      //fprintf(stderr, "destroy_tower post\n");
 }
 /*
 recursively destroy gstack_t structs.
@@ -880,18 +888,27 @@ void destroy_gstack(gstack_t *stack) {
     if (stack == NULL) {
             return;
         }
+      //fprintf(stderr, "destroy_gstack pre\n");
 
         // Step 1: Free items in the items array
+        if (stack->items != NULL) {
+               //fprintf(stderr, "destroy_gstack pprepost\n");
+
         for (size_t i = 0; i < stack->nitems; i++) {
-            if (stack->items[i] != NULL) {
+            if (stack->items != NULL && stack->items[i] != NULL) {
+                     //fprintf(stderr, "destroy_gstack -ee %d\n", i );
+
                 // Free the item if it was dynamically allocated
-                free(stack->items[i]);
+                //free(stack->items[i]); // TODO: We're not freeing the items, because we're not allocating them. Or at least not always... it's a mess
                 stack->items[i] = NULL; // Optional: Avoid dangling pointers
             }
         }
+        }
+      //fprintf(stderr, "destroy_gstack post1\n");
 
         // Step 2: Free the gstack_t structure
         free(stack);
+        //fprintf(stderr, "destroy_gstack post2\n");
 }
 
 int

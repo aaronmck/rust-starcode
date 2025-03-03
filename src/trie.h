@@ -54,7 +54,9 @@ typedef struct trie_t trie_t;
 #define MAXBRCDLEN 1023     // Maximum barcode length.
 #define GSTACK_INIT_SIZE 16 // Initial slots of 'gstack'.
 
-extern gstack_t * const TOWER_TOP;
+extern _Thread_local gstack_t * const TOWER_TOP;
+
+void init_thread_local_tower_top(void);
 
 int         check_trie_error_and_reset (void);
 int         count_nodes (trie_t*);
